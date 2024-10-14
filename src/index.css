@@ -1,7 +1,10 @@
 body {
-  background: url("./components/box/pics/Forest.jpg"); /* Dark background */
-  font-family: "Arial", sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh; /* Ensure it covers the full viewport height */
+  overflow: hidden; /* Remove the scrollbar */
   background-size: cover;
+  font-family: "Arial", sans-serif;
 }
 
 /* Navbar CSS */
