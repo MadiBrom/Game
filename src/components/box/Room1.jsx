@@ -8,12 +8,11 @@ import run3 from "./pics/run3.png";
 import run4 from "./pics/run4.png";
 import run5 from "./pics/run5.png";
 import robo from "./pics/robo.png"; // The PNG that stays with the character
-import backgroundImage from "./pics/background.png"; // Adjust path accordingly
 
 // Array of images representing the character's running animation
 const runningImages = [run0, run1, run2, run3, run4, run5];
 
-const MoveBox = () => {
+const Room1 = () => {
   const navigate = useNavigate();
   const [position, setPosition] = useState(20); // Horizontal position (from the right)
   const [verticalPosition, setVerticalPosition] = useState(200); // Vertical position (bottom distance)
@@ -158,10 +157,8 @@ const MoveBox = () => {
   const containerStyle = {
     width: "100vw",
     height: "100vh",
-    backgroundImage: `url(${backgroundImage})`, // Set the background image
-    backgroundSize: "cover", // Make the image cover the entire background
-    backgroundPosition: "center", // Center the background image
-    backgroundRepeat: "no-repeat", // Prevent repeating the image
+    backgroundSize: "cover",
+    backgroundPosition: "center",
     position: "relative",
   };
 
@@ -213,7 +210,7 @@ const MoveBox = () => {
       {/* Robot (always rendered next to the character) */}
       <div style={robotStyle}></div>
 
-      <button
+      {/* <button
         style={buttonStyle}
         onClick={() => {
           if (isInRange) {
@@ -222,9 +219,9 @@ const MoveBox = () => {
         }}
       >
         {isInRange ? "Press me" : "Out of range"}
-      </button>
+      </button> */}
     </div>
   );
 };
 
-export default MoveBox;
+export default Room1;
