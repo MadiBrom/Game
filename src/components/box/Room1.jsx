@@ -157,8 +157,11 @@ const Room1 = () => {
   const containerStyle = {
     width: "100vw",
     height: "100vh",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
+    // backgroundImage: `url(${backgroundImage})`, // Set the background image
+    backgroundColor: "green",
+    backgroundSize: "cover", // Make the image cover the entire background
+    backgroundPosition: "center", // Center the background image
+    backgroundRepeat: "no-repeat", // Prevent repeating the image
     position: "relative",
   };
 
@@ -174,16 +177,6 @@ const Room1 = () => {
     transform: isFlipped ? "scaleX(-1)" : "scaleX(1)", // Flip the image when moving left
   };
 
-  const buttonStyle = {
-    position: "absolute",
-    bottom: `${buttonPosition.y}px`,
-    right: `${buttonPosition.x}px`,
-    padding: "10px 20px",
-    backgroundColor: isInRange ? "green" : "gray", // Change color if in range
-    color: "white",
-    cursor: isInRange ? "pointer" : "default",
-    pointerEvents: isInRange ? "auto" : "none", // Disable the button if not in range
-  };
   // Define styles for the robot image
   const robotStyle = {
     width: "300px", // Adjust the size of the robot
@@ -209,17 +202,6 @@ const Room1 = () => {
 
       {/* Robot (always rendered next to the character) */}
       <div style={robotStyle}></div>
-
-      {/* <button
-        style={buttonStyle}
-        onClick={() => {
-          if (isInRange) {
-            navigate("/room1"); // Replace '/room1' with the actual path to your Room1 component
-          }
-        }}
-      >
-        {isInRange ? "Press me" : "Out of range"}
-      </button> */}
     </div>
   );
 };
