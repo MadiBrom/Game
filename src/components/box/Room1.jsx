@@ -17,6 +17,7 @@ const Room1 = () => {
   const [position, setPosition] = useState(20); // Horizontal position (from the right)
   const [verticalPosition, setVerticalPosition] = useState(200); // Vertical position (bottom distance)
   const [isJumping, setIsJumping] = useState(false); // Track if the character is in the middle of a jump
+  const [isOnPlatform, setIsOnPlatform] = useState(false); // Track if character is standing on a platform
   const [velocityX, setVelocityX] = useState(0); // Horizontal velocity
   const [velocityY, setVelocityY] = useState(0); // Vertical velocity (for jump and fall)
   const [keyState, setKeyState] = useState({
@@ -31,18 +32,18 @@ const Room1 = () => {
     y: verticalPosition + 100, // Initialize the robot's Y position above the character
   });
 
-  const [isInRange, setIsInRange] = useState(false); // State to track if the character is near the button
-
-  const gravity = 0.5; // Gravity constant to pull the box down
+  const gravity = 0.5; // Gravity constant to pull the character down
   const jumpStrength = 10; // Initial upward velocity for jump
   const horizontalSpeed = 3; // Speed of horizontal movement
-  const groundLevel = 200; // Defined ground level for the box to return to
+  const groundLevel = 200; // Defined ground level for the character to return to
   const animationSpeed = 150; // Speed to cycle through the running frames (in milliseconds)
 
-  const buttonPosition = {
-    x: 300, // Horizontal position of the button (adjust as needed)
-    y: groundLevel, // The vertical position (aligned with the ground)
-  };
+  // Fixed platform positions
+  const platforms = [
+    { x: 100, y: 300, width: 200, height: 20 }, // Platform 1
+    { x: 400, y: 320, width: 200, height: 20 }, // Platform 2
+    { x: 700, y: 340, width: 200, height: 20 }, // Platform 3
+  ];
 
   // Handle key down events to update keyState
   const handleKeyDown = (e) => {
@@ -91,11 +92,12 @@ const Room1 = () => {
     }
 
     // Jumping logic
-    if (keyState.ArrowUp && !isJumping) {
+    if (keyState.ArrowUp && !isJumping && !isOnPlatform) {
       setIsJumping(true);
+      setIsOnPlatform(false); // Leave the platform
       setVelocityY(-jumpStrength); // Apply upward velocity for jump (negative value for upward movement)
     }
-  }, [keyState, isJumping, horizontalSpeed, jumpStrength]);
+  }, [keyState, isJumping, isOnPlatform, horizontalSpeed, jumpStrength]);
 
   useEffect(() => {
     const moveWithLag = () => {
@@ -119,15 +121,43 @@ const Room1 = () => {
   // Update position for jumping, falling, and horizontal movement
   useEffect(() => {
     const jumpInterval = setInterval(() => {
-      // Apply gravity and adjust the vertical position
+      // Apply gravity only if not standing on a platform
       setVerticalPosition((prevVertical) => {
-        const newVertical = prevVertical - velocityY; // Subtract velocity to move up
-        if (newVertical <= groundLevel) {
-          // Reset to ground level when reaching the bottom
+        let newVertical = prevVertical - velocityY; // Subtract velocity to move up
+
+        // Check if character is landing on any platform
+        const platformLandedOn = platforms.find((platform) => {
+          const isWithinPlatformWidth =
+            position > platform.x && position < platform.x + platform.width;
+          const isLandedOnPlatform =
+            prevVertical >= platform.y &&
+            newVertical <= platform.y &&
+            velocityY > 0; // Check if falling down onto the platform
+          return isWithinPlatformWidth && isLandedOnPlatform;
+        });
+
+        if (platformLandedOn) {
+          // If landed, set position on the platform
+          newVertical = platformLandedOn.y + platformLandedOn.height;
           setIsJumping(false);
+          setIsOnPlatform(true); // The character is now on a platform
+          setVelocityY(0); // Stop downward velocity
+          return newVertical;
+        }
+
+        // Check if the character should fall to the ground
+        if (newVertical <= groundLevel) {
+          setIsJumping(false);
+          setIsOnPlatform(false); // Character is no longer on a platform
           setVelocityY(0);
           return groundLevel; // Stop at ground level
         }
+
+        // If the character falls off a platform
+        if (!platformLandedOn && isOnPlatform && velocityY > 0) {
+          setIsOnPlatform(false);
+        }
+
         return newVertical;
       });
 
@@ -138,30 +168,27 @@ const Room1 = () => {
       });
 
       // Update vertical velocity due to gravity
-      if (isJumping) {
+      if (isJumping || !isOnPlatform) {
         setVelocityY((prevVelocityY) => prevVelocityY + gravity); // Add gravity to pull the character back down
-      }
-
-      // Check if the character is in range of the button
-      const distance = Math.abs(position - buttonPosition.x);
-      if (distance < 50 && verticalPosition === buttonPosition.y) {
-        setIsInRange(true); // Character is in range
-      } else {
-        setIsInRange(false); // Character is out of range
       }
     }, 20);
 
     return () => clearInterval(jumpInterval); // Clean up interval when the jump ends
-  }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
+  }, [
+    isJumping,
+    isOnPlatform,
+    velocityX,
+    velocityY,
+    gravity,
+    position,
+    verticalPosition,
+    platforms,
+  ]);
 
   const containerStyle = {
     width: "100vw",
     height: "100vh",
-    // backgroundImage: `url(${backgroundImage})`, // Set the background image
     backgroundColor: "green",
-    backgroundSize: "cover", // Make the image cover the entire background
-    backgroundPosition: "center", // Center the background image
-    backgroundRepeat: "no-repeat", // Prevent repeating the image
     position: "relative",
   };
 
@@ -174,6 +201,7 @@ const Room1 = () => {
     right: `${position}px`, // Adjust horizontal position
     transition: !isJumping ? "right 0.1s" : "none", // Smooth transitions for horizontal movement
     backgroundColor: "transparent", // Ensure the background is transparent
+    zIndex: 10, // Ensure character is above the platforms
     transform: isFlipped ? "scaleX(-1)" : "scaleX(1)", // Flip the image when moving left
   };
 
@@ -187,9 +215,21 @@ const Room1 = () => {
     backgroundImage: `url(${robo})`,
     backgroundSize: "contain",
     backgroundRepeat: "no-repeat",
+    zIndex: 9, // Robot is behind the character but above platforms
     transformOrigin: "center", // Flip around the center to avoid shifting
     transform: isFlipped ? "scaleX(-1)" : "scaleX(1)", // Flip the robot like the character without shifting position
   };
+
+  // Define styles for the platforms
+  const platformStyle = (platform) => ({
+    position: "fixed",
+    width: `${platform.width}px`,
+    height: `${platform.height}px`,
+    backgroundColor: "brown",
+    bottom: `${platform.y}px`,
+    left: `${platform.x}px`,
+    zIndex: 5, // Platforms are behind the character and the robot
+  });
 
   return (
     <div style={containerStyle}>
@@ -198,10 +238,16 @@ const Room1 = () => {
         src={runningImages[currentImageIndex]}
         alt="Character"
         style={characterStyle}
+        className="character"
       />
 
       {/* Robot (always rendered next to the character) */}
-      <div style={robotStyle}></div>
+      <div style={robotStyle} className="robot"></div>
+
+      {/* Render the platforms */}
+      {platforms.map((platform, index) => (
+        <div key={index} style={platformStyle(platform)} className="platform" />
+      ))}
     </div>
   );
 };

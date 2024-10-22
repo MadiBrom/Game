@@ -41,7 +41,7 @@ const MoveBox = () => {
   const animationSpeed = 150; // Speed to cycle through the running frames (in milliseconds)
 
   const buttonPosition = {
-    x: 300, // Horizontal position of the button (adjust as needed)
+    x: 1000, // Horizontal position of the button (adjust as needed)
     y: groundLevel, // The vertical position (aligned with the ground)
   };
 
