@@ -10,7 +10,7 @@ const MoveBox = () => {
 
   const groundLevel = 50; // Base ground level (relative to container)
   const gravity = 0.5;
-  const jumpStrength = 10;
+  const jumpStrength = 11;
   const horizontalSpeed = 3;
 
   const platforms = [
@@ -28,34 +28,37 @@ const MoveBox = () => {
       // Update horizontal position
       setPosition((prevPos) => prevPos + velocityX);
 
-      // Update vertical position
+      // Update vertical position (gravity and jumping behavior)
       setVerticalPosition((prevVert) => {
-        const nextVert = prevVert + velocityY;
+        let nextVert = prevVert + velocityY;
 
         const onPlatform = platforms.some((platform) =>
           checkPlatformCollision(platform, position, nextVert)
         );
 
+        // Handle platform collision
         if (onPlatform) {
-          setIsJumping(false);
+          // Stop downward movement and adjust position to the top of the platform
           setVelocityY(0);
           return platforms.find((platform) =>
             checkPlatformCollision(platform, position, nextVert)
-          ).y + 20; // Adjust to sit on top of the platform
+          ).y + 20; // Adjust based on platform height
         }
 
+        // If the character is falling below the ground level
         if (nextVert <= groundLevel) {
-          setIsJumping(false);
-          setVelocityY(0);
+          setVelocityY(0); // Stop gravity at ground level
           return groundLevel;
         }
 
-        // If not on platform or ground, fall
+        // If not on a platform or ground, continue applying gravity
         return nextVert;
       });
 
-      // Apply gravity
-      setVelocityY((prevVelY) => prevVelY - gravity);
+      // Apply gravity only if not on a platform
+      if (!onPlatform) {
+        setVelocityY((prevVelY) => prevVelY - gravity);
+      }
     }, 20);
 
     return () => clearInterval(gameLoop);
@@ -68,7 +71,7 @@ const MoveBox = () => {
     // Check if the character is within the horizontal bounds of the platform
     const withinX = charX + charWidth > platform.x && charX < platform.x + platform.width;
     // Check if the character is vertically aligned with the platform (slightly above or touching it)
-    const onTop = charY - charHeight <= platform.y && charY > platform.y;
+    const onTop = charY - charHeight <= platform.y && charY >= platform.y;
 
     return withinX && onTop;
   };
