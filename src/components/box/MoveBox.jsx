@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
-import run0 from "./pics/run0.png";
-import run1 from "./pics/run1.png";
-import run2 from "./pics/run2.png";
-import run3 from "./pics/run3.png";
-import run4 from "./pics/run4.png";
-import run5 from "./pics/run5.png";
-import robo from "./pics/robo.png"; // The PNG that stays with the character
-
-const runningImages = [run0, run1, run2, run3, run4, run5];
 
 const MoveBox = () => {
-  const navigate = useNavigate();
   const [position, setPosition] = useState(50); // Character's horizontal position
-  const [verticalPosition, setVerticalPosition] = useState(0); // Character's vertical position
+  const [verticalPosition, setVerticalPosition] = useState(50); // Character's vertical position
   const [velocityX, setVelocityX] = useState(0); // Horizontal velocity
   const [velocityY, setVelocityY] = useState(0); // Vertical velocity
   const [isJumping, setIsJumping] = useState(false);
@@ -25,7 +13,7 @@ const MoveBox = () => {
   const jumpStrength = 10;
   const horizontalSpeed = 3;
 
-  // Platforms (x, y is top-left corner of the platform)
+  // Platforms (x, y is the bottom-left corner of the platform)
   const platforms = [
     { x: 300, y: 100, width: 200, height: 20 },
     { x: 600, y: 50, width: 150, height: 20 },
@@ -34,10 +22,13 @@ const MoveBox = () => {
 
   useEffect(() => {
     const gameLoop = setInterval(() => {
+      // Update horizontal position
       setPosition((prevPos) => prevPos + velocityX);
 
+      // Update vertical position
       setVerticalPosition((prevVert) => {
-        const nextVert = prevVert - velocityY;
+        const nextVert = prevVert + velocityY;
+
         const onPlatform = platforms.some((platform) =>
           checkPlatformCollision(platform, position, nextVert)
         );
@@ -47,7 +38,7 @@ const MoveBox = () => {
           setVelocityY(0);
           return platforms.find((platform) =>
             checkPlatformCollision(platform, position, nextVert)
-          ).y;
+          ).y + 20; // Adjust to sit on top of the platform
         }
 
         if (nextVert <= groundLevel) {
@@ -56,25 +47,25 @@ const MoveBox = () => {
           return groundLevel;
         }
 
+        // If not on platform or ground, fall
         return nextVert;
       });
 
-      if (isJumping) {
-        setVelocityY((prevVelY) => prevVelY - gravity);
-      }
+      // Apply gravity
+      setVelocityY((prevVelY) => prevVelY - gravity);
     }, 20);
 
     return () => clearInterval(gameLoop);
-  }, [velocityX, velocityY, position, verticalPosition, isJumping]);
+  }, [velocityX, velocityY, position, verticalPosition]);
 
   const checkPlatformCollision = (platform, charX, charY) => {
     const charWidth = 50; // Adjust based on character size
     const charHeight = 50;
 
     const withinX = charX + charWidth > platform.x && charX < platform.x + platform.width;
-    const abovePlatform = charY <= platform.y && charY + charHeight > platform.y;
+    const onTop = charY - charHeight <= platform.y && charY >= platform.y;
 
-    return withinX && abovePlatform;
+    return withinX && onTop;
   };
 
   const handleKeyDown = (e) => {
@@ -104,7 +95,7 @@ const MoveBox = () => {
       setIsJumping(true);
       setVelocityY(jumpStrength);
     }
-  }, [keyState]);
+  }, [keyState, isJumping]);
 
   const containerStyle = {
     position: "relative",
