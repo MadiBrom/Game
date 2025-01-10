@@ -13,11 +13,14 @@ const MoveBox = () => {
   const jumpStrength = 10;
   const horizontalSpeed = 3;
 
-  // Platforms (x, y is the bottom-left corner of the platform)
   const platforms = [
     { x: 300, y: 100, width: 200, height: 20 },
-    { x: 600, y: 50, width: 150, height: 20 },
+    { x: 600, y: 50, width: 200, height: 20 },
     { x: 900, y: 150, width: 200, height: 20 },
+    { x: 1200, y: 200, width: 250, height: 20 },
+    { x: 150, y: 250, width: 150, height: 20 },  
+    { x: 500, y: 300, width: 180, height: 20 },   
+    { x: 750, y: 350, width: 200, height: 20 },   
   ];
 
   useEffect(() => {
@@ -62,8 +65,10 @@ const MoveBox = () => {
     const charWidth = 50; // Adjust based on character size
     const charHeight = 50;
 
+    // Check if the character is within the horizontal bounds of the platform
     const withinX = charX + charWidth > platform.x && charX < platform.x + platform.width;
-    const onTop = charY - charHeight <= platform.y && charY >= platform.y;
+    // Check if the character is vertically aligned with the platform (slightly above or touching it)
+    const onTop = charY - charHeight <= platform.y && charY > platform.y;
 
     return withinX && onTop;
   };
@@ -87,10 +92,54 @@ const MoveBox = () => {
   }, []);
 
   useEffect(() => {
+    let animationFrameId;
+    
+    const gameLoop = () => {
+      // Game update logic (same as before)
+      setPosition((prevPos) => prevPos + velocityX);
+      setVerticalPosition((prevVert) => {
+        const nextVert = prevVert + velocityY;
+        const onPlatform = platforms.some((platform) =>
+          checkPlatformCollision(platform, position, nextVert)
+        );
+  
+        if (onPlatform) {
+          setIsJumping(false);
+          setVelocityY(0);
+          return platforms.find((platform) =>
+            checkPlatformCollision(platform, position, nextVert)
+          ).y + 20;
+        }
+  
+        if (nextVert <= groundLevel) {
+          setIsJumping(false);
+          setVelocityY(0);
+          return groundLevel;
+        }
+  
+        return nextVert;
+      });
+  
+      setVelocityY((prevVelY) => prevVelY - gravity);
+      
+      // Re-run the game loop
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
+  
+    // Start the game loop
+    animationFrameId = requestAnimationFrame(gameLoop);
+  
+    // Cleanup the game loop on component unmount
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [velocityX, velocityY, position, verticalPosition]);
+  
+  useEffect(() => {
     if (keyState.ArrowLeft) setVelocityX(-horizontalSpeed);
     if (keyState.ArrowRight) setVelocityX(horizontalSpeed);
     if (!keyState.ArrowLeft && !keyState.ArrowRight) setVelocityX(0);
 
+    // Jumping should be allowed whenever the up arrow is pressed, 
+    // not dependent on being off the platform
     if (keyState.ArrowUp && !isJumping) {
       setIsJumping(true);
       setVelocityY(jumpStrength);

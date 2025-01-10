@@ -8,6 +8,7 @@ import run3 from "./pics/run3.png";
 import run4 from "./pics/run4.png";
 import run5 from "./pics/run5.png";
 import robo from "./pics/robo.png"; // The PNG that stays with the character
+// import backgroundImage from "./pics/background.png";
 
 // Array of images representing the character's running animation
 const runningImages = [run0, run1, run2, run3, run4, run5];
@@ -99,6 +100,25 @@ const Room1 = () => {
   }, [keyState, isJumping, horizontalSpeed, jumpStrength]);
 
   useEffect(() => {
+    const moveWithLag = () => {
+      const lagFactor = 0.1; // Increase the factor slightly for smoother and faster catching up
+
+      // Gradually move the robot's position towards the character's position
+      setFloatingPosition((prevPosition) => ({
+        x: prevPosition.x + (position - prevPosition.x) * lagFactor, // Lerp towards the character's position
+        y:
+          prevPosition.y +
+          (verticalPosition + 100 - prevPosition.y) * lagFactor, // Lerp towards the character's vertical position
+      }));
+    };
+
+    // Start the animation
+    const animationFrameId = requestAnimationFrame(moveWithLag);
+
+    return () => cancelAnimationFrame(animationFrameId); // Clean up on unmount
+  }, [position, verticalPosition]);
+
+  useEffect(() => {
     const jumpInterval = setInterval(() => {
       // Apply gravity and adjust the vertical position
       setVerticalPosition((prevVertical) => {
@@ -155,17 +175,22 @@ const Room1 = () => {
     return () => clearInterval(jumpInterval);
   }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
   
+  
   const containerStyle = {
     width: "100vw",
     height: "100vh",
+    // backgroundImage: `url(${backgroundImage})`, // Set the background image
     backgroundColor: "grey",
+    backgroundSize: "cover", // Make the image cover the entire background
+    backgroundPosition: "center", // Center the background image
+    backgroundRepeat: "no-repeat", // Prevent repeating the image
     position: "relative",
   };
 
   // Define styles for the character image
   const characterStyle = {
-    width: "200px", // Restored size for the character
-    height: "200px", // Restored size for the character
+    width: "500px", // Adjust width based on your character image
+    height: "500px", // Adjust height based on your character image
     position: "fixed",
     bottom: `${verticalPosition}px`, // Adjust vertical position for jumping
     right: `${position}px`, // Adjust horizontal position
@@ -176,21 +201,43 @@ const Room1 = () => {
 
   // Define styles for the robot image
   const robotStyle = {
-    width: "150px", // Adjust size of the robot image
-    height: "150px",
+    width: "300px", // Adjust the size of the robot
+    height: "300px",
     position: "fixed",
-    bottom: `${floatingPosition.y}px`,
-    right: `${floatingPosition.x}px`,
+    bottom: `${floatingPosition.y}px`, // Adjust robot's vertical position with lag
+    right: `${floatingPosition.x}px`, // Adjust robot's horizontal position with lag
     backgroundImage: `url(${robo})`,
     backgroundSize: "contain",
     backgroundRepeat: "no-repeat",
     transformOrigin: "center", // Flip around the center to avoid shifting
     transform: isFlipped ? "scaleX(-1)" : "scaleX(1)", // Flip the robot like the character without shifting position
   };
-  const platformStyle = {
-    backgroundColor: "brown", // Set platform color to brown
-    position: "absolute", // Use absolute positioning for the platforms
+  const buttonPosition = {
+    x: 1000, // Horizontal position of the button (adjust as needed)
+    y: 400, // Vertical position above the ground level (higher than the character's max jump height)
   };
+  
+  const buttonStyle = {
+    position: "absolute",
+    bottom: `${buttonPosition.y}px`,
+    right: `${buttonPosition.x}px`,
+    padding: "10px 20px",
+    backgroundColor: "gray", // Always gray since it will be unreachable
+    color: "white",
+    cursor: "default", // No interaction allowed
+    pointerEvents: "none", // Disable interactions entirely
+  };
+
+  const platformStyle = {
+    position: "absolute",
+    backgroundColor: "brown", // Visible color
+    height: "20px", // Platform height
+    borderRadius: "5px", // Optional round edges
+    zIndex: 1, // Ensure it's on top of the background
+  };
+  
+  
+
   return (
     <div style={containerStyle}>
       {/* Main Character */}
@@ -203,18 +250,31 @@ const Room1 = () => {
       {/* Robot */}
       <div style={robotStyle}></div>
 
+      {/* Button */}
+      <button
+        style={buttonStyle}
+        onClick={() => {
+          if (isInRange) {
+            navigate("/room1"); // Replace '/room1' with the actual path to your Room1 component
+          }
+        }}
+      >
+        {isInRange ? "Press me" : "Out of range"}
+      </button>
+
       {platforms.map((platform, index) => (
-        <div
-          key={index}
-          style={{
-            ...platformStyle,
-            width: `${platform.width}px`,
-            height: `${platform.height}px`,
-            left: `${platform.x}px`,
-            bottom: `${platform.y}px`, // Platform position relative to the bottom (adjusted from ground level)
-          }}
-        ></div>
-      ))}
+  <div
+    key={index}
+    style={{
+      ...platformStyle,
+      width: `${platform.width}px`,
+      height: `${platform.height}px`,
+      left: `${platform.x}px`,
+      bottom: `${platform.y}px`, // Platform position relative to the bottom (adjusted from ground level)
+    }}
+  ></div>
+))}
+
     </div>
   );
 };
