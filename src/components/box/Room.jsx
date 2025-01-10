@@ -218,7 +218,7 @@ const Room = () => {
         style={buttonStyle}
         onClick={() => {
           if (isInRange) {
-            navigate("/room1"); // Replace '/room1' with the actual path to your Room1 component
+            navigate("/3");
           }
         }}
       >

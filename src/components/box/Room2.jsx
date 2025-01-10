@@ -260,61 +260,61 @@ useEffect(() => {
     }
   }, [keyState.ArrowLeft, keyState.ArrowRight]);
 
-  // Update the position, jumping, and collision with platforms
   useEffect(() => {
     const jumpInterval = setInterval(() => {
-      setVerticalPosition((prevVertical) => {
-        const newVertical = prevVertical - velocityY; // Subtract velocity to move up
+        setVerticalPosition((prevVertical) => {
+            const newVertical = prevVertical - velocityY; // Subtract velocity to move up
 
-        // Check if the character collides with any platform
-        const onPlatform = platforms.some((platform) => {
-          const isInHorizontalRange = position >= platform.x && position <= platform.x + platform.width;
-          const isInVerticalRange = newVertical <= platform.y + platform.height && prevVertical > platform.y;
+            // Check if the character collides with any platform
+            const onPlatform = platforms.some((platform) => {
+                const isInHorizontalRange = position >= platform.x && position <= platform.x + platform.width;
+                const isInVerticalRange = newVertical <= platform.y + platform.height && prevVertical > platform.y;
 
-          return isInHorizontalRange && isInVerticalRange;
+                return isInHorizontalRange && isInVerticalRange;
+            });
+
+            if (onPlatform) {
+                setIsJumping(false);
+                setVelocityY(0);
+
+                const landingPlatform = platforms.find(
+                    (platform) =>
+                        position >= platform.x &&
+                        position <= platform.x + platform.width &&
+                        newVertical <= platform.y + platform.height &&
+                        prevVertical >= platform.y
+                );
+
+                if (landingPlatform) {
+                    return landingPlatform.y + landingPlatform.height; // Land on platform
+                }
+            }
+
+            // Apply gravity and prevent going below ground level
+            if (newVertical <= groundLevel && !onPlatform) {
+                setIsJumping(false);
+                setVelocityY(0);
+                return groundLevel;
+            }
+
+            return newVertical;
         });
 
-        if (onPlatform) {
-          setIsJumping(false);
-          setVelocityY(0);
+        // Update position horizontally based on velocityX
+        setPosition((prevPosition) => {
+            const newPosition = prevPosition - velocityX;
+            return Math.max(0, Math.min(newPosition, window.innerWidth - 100)); // Prevent moving out of bounds
+        });
 
-          const landingPlatform = platforms.find(
-            (platform) =>
-              position >= platform.x &&
-              position <= platform.x + platform.width &&
-              newVertical <= platform.y + platform.height &&
-              prevVertical >= platform.y
-          );
-
-          if (landingPlatform) {
-            return landingPlatform.y + landingPlatform.height;
-          }
+        // Apply gravity if not on a platform
+        if (!onPlatform) {
+            setVelocityY((prevVelocityY) => prevVelocityY + gravity);
         }
-
-        // Apply gravity and prevent going below ground level
-        if (newVertical <= groundLevel && !onPlatform) {
-          setIsJumping(false);
-          setVelocityY(0);
-          return groundLevel;
-        }
-
-        return newVertical;
-      });
-
-      // Horizontal movement
-      setPosition((prevPosition) => {
-        const newPosition = prevPosition - velocityX;
-        return Math.max(0, Math.min(newPosition, window.innerWidth - 100));
-      });
-
-      // Apply gravity to pull character down
-      if (isJumping) {
-        setVelocityY((prevVelocityY) => prevVelocityY + gravity);
-      }
     }, 20);
 
     return () => clearInterval(jumpInterval);
-  }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
+}, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
+
 
   const containerStyle = {
     width: "100vw",
@@ -326,6 +326,28 @@ useEffect(() => {
     backgroundRepeat: "no-repeat", // Prevent repeating the image
     position: "relative",
   };
+
+  useEffect(() => {
+    // Handle horizontal movement (left and right)
+    if (keyState.ArrowLeft) {
+        setVelocityX(-horizontalSpeed); // Move left
+        setIsFlipped(true); // Flip when moving left
+    } else if (keyState.ArrowRight) {
+        setVelocityX(horizontalSpeed); // Move right
+        setIsFlipped(false); // Don't flip when moving right
+    } else {
+        setVelocityX(0); // Stop when no key is pressed
+    }
+
+    // Handle jumping logic
+    if (keyState.ArrowUp && !isJumping) {
+        setIsJumping(true);
+        setVelocityY(jumpStrength); // Start jumping
+    }
+
+    // Gravity and vertical movement will be handled separately
+}, [keyState, isJumping]);
+
 
   // Define styles for the character image
   const characterStyle = {
