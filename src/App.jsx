@@ -5,6 +5,8 @@ import MoveBox from "./components/box/MoveBox";
 import Room from "./components/box/Room";
 
 import Room1 from "./components/box/Room1";
+import Room2 from "./components/box/Room2";
+
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -13,8 +15,10 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<MoveBox />} />
-        <Route path="/room" element={<Room />} />
-        <Route path="/room1" element={<Room1 />} />
+        <Route path="/1" element={<Room />} />
+        <Route path="/2" element={<Room1 />} />
+        <Route path="/3" element={<Room2 />} />
+
       </Routes>
     </div>
   );

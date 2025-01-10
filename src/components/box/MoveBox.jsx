@@ -165,6 +165,7 @@ const MoveBox = () => {
     width: "50px",
     height: "50px",
     backgroundColor: "red",
+    border: "2px solid black",
     left: `${position}px`,
     bottom: `${verticalPosition}px`,
   };
