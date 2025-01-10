@@ -1,36 +1,31 @@
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh; /* Ensure it covers the full viewport height */
-  overflow: hidden; /* Remove the scrollbar */
-  background-size: cover;
-  font-family: "Arial", sans-serif;
-}
-
 /* Navbar CSS */
 ul {
-  list-style-type: none; /* Remove bullets from list */
+  display: flex;
+  justify-content: flex-start; /* Align links to the left */
+  align-items: center; /* Align items vertically */
+  list-style-type: none; /* Remove bullets */
   margin: 0; /* Remove default margin */
   padding: 0; /* Remove default padding */
-  background-color: #00000031; /* Dark background for navbar */
-  overflow: hidden; /* Ensure content doesn't overflow */
-  display: flex; /* Flex layout for horizontal alignment */
-  justify-content: space-around; /* Space links evenly */
+  background-color: #333; /* Background color for the navbar */
+  width: 100%; /* Full width across the page */
+  height: 50px; /* Fixed height for the navbar */
+  position: fixed; /* Stick to the top */
+  top: 0; /* Position it at the top of the page */
+  z-index: 1000; /* Ensure it stays above other content */
 }
 
 li {
-  display: inline; /* Ensure list items are inline */
+  margin: 0;
 }
 
 a {
-  display: block; /* Allow clickable area for entire link */
-  color: white; /* Set link text color to white */
-  text-align: center; /* Center-align text */
-  padding: 14px 20px; /* Add padding for spacing */
-  text-decoration: none; /* Remove underline from links */
+  display: block;
+  padding: 14px 20px;
+  text-decoration: none; /* Remove underline */
+  color: white; /* Link color */
+  font-size: 16px; /* Font size */
 }
 
 a:hover {
-  background-color: #575757; /* Change background color on hover */
-  transition: background-color 0.3s; /* Smooth transition for hover effect */
+  background-color: #575757; /* Highlight on hover */
 }
