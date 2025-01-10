@@ -157,73 +157,73 @@ const Room1 = () => {
   }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
 
   useEffect(() => {
-    const jumpInterval = setInterval(() => {
-      // Apply gravity and adjust the vertical position
-      setVerticalPosition((prevVertical) => {
-        const newVertical = prevVertical - velocityY;
-  
-        // Check for collision with platforms
-        const onPlatform = platforms.some((platform) => {
-          // Check if the character's horizontal position is within platform's bounds
-          const isInHorizontalRange = position >= platform.x && position <= platform.x + platform.width;
-          
-          // Check if the character's vertical position is within platform's bounds
-          const isInVerticalRange = newVertical <= platform.y + platform.height && prevVertical >= platform.y;
-  
-          return isInHorizontalRange && isInVerticalRange;
-        });
-  
-        if (onPlatform) {
-          setIsJumping(false);
-          setVelocityY(0);
-  
-          // Find the platform the character is landing on and return to its surface
-          const landingPlatform = platforms.find(
-            (platform) =>
-              position >= platform.x &&
-              position <= platform.x + platform.width &&
-              newVertical <= platform.y + platform.height &&
-              prevVertical >= platform.y
-          );
-  
-          if (landingPlatform) {
-            return landingPlatform.y + landingPlatform.height; // Place character on top of platform
-          }
-        }
-  
-        // Reset to ground level when reaching the bottom if no platform is found
-        if (newVertical <= groundLevel && !onPlatform) {
-          setIsJumping(false);
-          setVelocityY(0);
-          return groundLevel;
-        }
-  
-        return newVertical;
+  const jumpInterval = setInterval(() => {
+    // Apply gravity and adjust the vertical position
+    setVerticalPosition((prevVertical) => {
+      const newVertical = prevVertical - velocityY;
+
+      // Check for collision with platforms
+      const onPlatform = platforms.some((platform) => {
+        // Check if the character's horizontal position is within platform's bounds
+        const isInHorizontalRange = position >= platform.x && position <= platform.x + platform.width;
+        
+        // Check if the character's vertical position is within platform's bounds
+        const isInVerticalRange = newVertical <= platform.y + platform.height && prevVertical >= platform.y;
+
+        return isInHorizontalRange && isInVerticalRange;
       });
-  
-      // Apply horizontal movement and keep the character within screen bounds
-      setPosition((prevPosition) => {
-        const newPosition = prevPosition - velocityX;
-        return Math.max(0, Math.min(newPosition, window.innerWidth - 100));
-      });
-  
-      // Update vertical velocity due to gravity
-      if (isJumping) {
-        setVelocityY((prevVelocityY) => prevVelocityY + gravity);
+
+      if (onPlatform) {
+        setIsJumping(false);
+        setVelocityY(0);
+
+        // Find the platform the character is landing on and return to its surface
+        const landingPlatform = platforms.find(
+          (platform) =>
+            position >= platform.x &&
+            position <= platform.x + platform.width &&
+            newVertical <= platform.y + platform.height &&
+            prevVertical >= platform.y
+        );
+
+        if (landingPlatform) {
+          return landingPlatform.y + landingPlatform.height; // Place character on top of platform
+        }
       }
-  
-      // Check if the character is near the button
-      const distance = Math.abs(position - buttonPosition.x);
-      if (distance < 50 && verticalPosition === buttonPosition.y) {
-        setIsInRange(true); // Character is in range
-      } else {
-        setIsInRange(false); // Character is out of range
+
+      // Reset to ground level when reaching the bottom if no platform is found
+      if (newVertical <= groundLevel && !onPlatform) {
+        setIsJumping(false);
+        setVelocityY(0);
+        return groundLevel;
       }
-    }, 20);
-  
-    return () => clearInterval(jumpInterval);
-  }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
-  
+
+      return newVertical;
+    });
+
+    // Apply horizontal movement and keep the character within screen bounds
+    setPosition((prevPosition) => {
+      const newPosition = prevPosition - velocityX;
+      return Math.max(0, Math.min(newPosition, window.innerWidth - 100));
+    });
+
+    // Update vertical velocity due to gravity
+    if (isJumping) {
+      setVelocityY((prevVelocityY) => prevVelocityY + gravity);
+    }
+
+    // Check if the character is near the button
+    const distance = Math.abs(position - buttonPosition.x);
+    if (distance < 50 && verticalPosition === buttonPosition.y) {
+      setIsInRange(true); // Character is in range
+    } else {
+      setIsInRange(false); // Character is out of range
+    }
+  }, 20);
+
+  return () => clearInterval(jumpInterval);
+}, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
+
 
   const containerStyle = {
     width: "100vw",
