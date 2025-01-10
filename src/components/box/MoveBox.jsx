@@ -10,18 +10,21 @@ const MoveBox = () => {
 
   const groundLevel = 50; // Base ground level (relative to container)
   const gravity = 0.5;
-  const jumpStrength = 11;
+  const jumpStrength = 12;
   const horizontalSpeed = 3;
 
   const platforms = [
-    { x: 300, y: 100, width: 200, height: 20 },
-    { x: 600, y: 50, width: 200, height: 20 },
-    { x: 900, y: 150, width: 200, height: 20 },
-    { x: 1200, y: 200, width: 250, height: 20 },
-    { x: 150, y: 250, width: 150, height: 20 },  
-    { x: 500, y: 300, width: 180, height: 20 },   
-    { x: 750, y: 350, width: 200, height: 20 },   
+    { x: 300, y: 100, width: 200, height: 20, color: "red" },
+    { x: 600, y: 50, width: 200, height: 20, color: "blue" },
+    { x: 900, y: 150, width: 200, height: 20, color: "green" },
+    { x: 1200, y: 200, width: 250, height: 20, color: "purple" },
+    { x: 150, y: 250, width: 150, height: 20, color: "orange" },
+    { x: 475, y: 300, width: 180, height: 20, color: "yellow" },
+    { x: 750, y: 350, width: 200, height: 20, color: "cyan" },
+    { x: 1500, y: 350, width: 200, height: 20, color: "magenta" },
+    { x: 1100, y: 400, width: 250, height: 20, color: "brown" },
   ];
+  
 
   useEffect(() => {
     const gameLoop = setInterval(() => {
@@ -183,11 +186,13 @@ const MoveBox = () => {
             height: `${platform.height}px`,
             left: `${platform.x}px`,
             bottom: `${platform.y}px`,
+            backgroundColor: platform.color, // Apply the platform's color here
           }}
         ></div>
       ))}
     </div>
   );
+  
 };
 
 export default MoveBox;
