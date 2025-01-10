@@ -118,113 +118,64 @@ const Room1 = () => {
     return () => cancelAnimationFrame(animationFrameId); // Clean up on unmount
   }, [position, verticalPosition]);
 
-  // Update position for jumping, falling, and horizontal movement
   useEffect(() => {
     const jumpInterval = setInterval(() => {
       // Apply gravity and adjust the vertical position
       setVerticalPosition((prevVertical) => {
         const newVertical = prevVertical - velocityY; // Subtract velocity to move up
-        if (newVertical <= groundLevel) {
-          // Reset to ground level when reaching the bottom
+  
+        // Check if the character collides with any platform
+        const onPlatform = platforms.some((platform) => {
+          const isInHorizontalRange = position >= platform.x && position <= platform.x + platform.width;
+          const isInVerticalRange = newVertical <= platform.y + platform.height && prevVertical > platform.y;
+  
+          return isInHorizontalRange && isInVerticalRange;
+        });
+  
+        if (onPlatform) {
           setIsJumping(false);
           setVelocityY(0);
-          return groundLevel; // Stop at ground level
+  
+          // Find the platform the character landed on
+          const landingPlatform = platforms.find(
+            (platform) =>
+              position >= platform.x &&
+              position <= platform.x + platform.width &&
+              newVertical <= platform.y + platform.height &&
+              prevVertical >= platform.y
+          );
+  
+          if (landingPlatform) {
+            return landingPlatform.y + landingPlatform.height; // Ensure character lands on top of platform
+          }
         }
+  
+        // Apply gravity and prevent going below ground level if not colliding with any platform
+        if (newVertical <= groundLevel && !onPlatform) {
+          setIsJumping(false);
+          setVelocityY(0);
+          return groundLevel;
+        }
+  
         return newVertical;
       });
-
-      // Apply horizontal movement
+  
+      // Horizontal movement
       setPosition((prevPosition) => {
         const newPosition = prevPosition - velocityX;
-        return Math.max(0, Math.min(newPosition, window.innerWidth - 100)); // Keep the character within screen bounds
+        return Math.max(0, Math.min(newPosition, window.innerWidth - 100));
       });
-
-      // Update vertical velocity due to gravity
+  
+      // Apply gravity to pull character down
       if (isJumping) {
-        setVelocityY((prevVelocityY) => prevVelocityY + gravity); // Add gravity to pull the character back down
-      }
-
-      // Check if the character is in range of the button
-      const distance = Math.abs(position - buttonPosition.x);
-      if (distance < 50 && verticalPosition === buttonPosition.y) {
-        setIsInRange(true); // Character is in range
-      } else {
-        setIsInRange(false); // Character is out of range
+        setVelocityY((prevVelocityY) => prevVelocityY + gravity);
       }
     }, 20);
-
-    return () => clearInterval(jumpInterval); // Clean up interval when the jump ends
+  
+    return () => clearInterval(jumpInterval);
   }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
-
-  useEffect(() => {
-  const jumpInterval = setInterval(() => {
-    // Apply gravity and adjust the vertical position
-    setVerticalPosition((prevVertical) => {
-      const newVertical = prevVertical - velocityY;
-
-      // Check for collision with platforms
-      const onPlatform = platforms.some((platform) => {
-        // Check if the character's horizontal position is within platform's bounds
-        const isInHorizontalRange = position >= platform.x && position <= platform.x + platform.width;
-        
-        // Check if the character's vertical position is within platform's bounds
-        const isInVerticalRange = newVertical <= platform.y + platform.height && prevVertical >= platform.y;
-
-        return isInHorizontalRange && isInVerticalRange;
-      });
-
-      if (onPlatform) {
-        setIsJumping(false);
-        setVelocityY(0);
-
-        // Find the platform the character is landing on and return to its surface
-        const landingPlatform = platforms.find(
-          (platform) =>
-            position >= platform.x &&
-            position <= platform.x + platform.width &&
-            newVertical <= platform.y + platform.height &&
-            prevVertical >= platform.y
-        );
-
-        if (landingPlatform) {
-          return landingPlatform.y + landingPlatform.height; // Place character on top of platform
-        }
-      }
-
-      // Reset to ground level when reaching the bottom if no platform is found
-      if (newVertical <= groundLevel && !onPlatform) {
-        setIsJumping(false);
-        setVelocityY(0);
-        return groundLevel;
-      }
-
-      return newVertical;
-    });
-
-    // Apply horizontal movement and keep the character within screen bounds
-    setPosition((prevPosition) => {
-      const newPosition = prevPosition - velocityX;
-      return Math.max(0, Math.min(newPosition, window.innerWidth - 100));
-    });
-
-    // Update vertical velocity due to gravity
-    if (isJumping) {
-      setVelocityY((prevVelocityY) => prevVelocityY + gravity);
-    }
-
-    // Check if the character is near the button
-    const distance = Math.abs(position - buttonPosition.x);
-    if (distance < 50 && verticalPosition === buttonPosition.y) {
-      setIsInRange(true); // Character is in range
-    } else {
-      setIsInRange(false); // Character is out of range
-    }
-  }, 20);
-
-  return () => clearInterval(jumpInterval);
-}, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
-
-
+  
+  
   const containerStyle = {
     width: "100vw",
     height: "100vh",
@@ -279,10 +230,13 @@ const Room1 = () => {
 
   const platformStyle = {
     position: "absolute",
-    backgroundColor: "brown",
-    height: "20px",
-    borderRadius: "5px",
+    backgroundColor: "brown", // Visible color
+    height: "20px", // Platform height
+    borderRadius: "5px", // Optional round edges
+    zIndex: 1, // Ensure it's on top of the background
   };
+  
+  
 
   return (
     <div style={containerStyle}>
@@ -308,8 +262,7 @@ const Room1 = () => {
         {isInRange ? "Press me" : "Out of range"}
       </button>
 
-     {/* Platforms */}
-     {platforms.map((platform, index) => (
+      {platforms.map((platform, index) => (
   <div
     key={index}
     style={{
@@ -317,7 +270,7 @@ const Room1 = () => {
       width: `${platform.width}px`,
       height: `${platform.height}px`,
       left: `${platform.x}px`,
-      bottom: `${platform.y + groundLevel}px`, // Adjust position relative to ground level
+      bottom: `${platform.y}px`, // Platform position relative to the bottom (adjusted from ground level)
     }}
   ></div>
 ))}
