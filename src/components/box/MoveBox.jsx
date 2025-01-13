@@ -7,14 +7,8 @@ const MoveBox = () => {
   const [velocityY, setVelocityY] = useState(0); // Vertical velocity
   const [isJumping, setIsJumping] = useState(false);
   const [keyState, setKeyState] = useState({ ArrowLeft: false, ArrowRight: false, ArrowUp: false });
-
-  const groundLevel = 50; // Base ground level (relative to container)
-  const gravity = 0.5;
-  const jumpStrength = 12;
-  const horizontalSpeed = 3;
-
-  // Define platforms and coins (each platform has a coin)
-  const platforms = [
+  
+  const [platforms, setPlatforms] = useState([
     { x: 300, y: 100, width: 200, height: 20, color: "red", coin: { x: 380, y: 120, visible: true } },
     { x: 600, y: 50, width: 200, height: 20, color: "blue", coin: { x: 680, y: 70, visible: true } },
     { x: 900, y: 150, width: 200, height: 20, color: "green", coin: { x: 980, y: 170, visible: true } },
@@ -24,7 +18,12 @@ const MoveBox = () => {
     { x: 750, y: 350, width: 200, height: 20, color: "cyan", coin: { x: 830, y: 370, visible: true } },
     { x: 1500, y: 350, width: 200, height: 20, color: "magenta", coin: { x: 1580, y: 370, visible: true } },
     { x: 1100, y: 400, width: 200, height: 20, color: "brown", coin: { x: 1180, y: 420, visible: true } },
-  ];
+  ]);
+
+  const groundLevel = 50; // Base ground level (relative to container)
+  const gravity = 0.5;
+  const jumpStrength = 12;
+  const horizontalSpeed = 3;
 
   useEffect(() => {
     let animationFrameId;
@@ -62,7 +61,7 @@ const MoveBox = () => {
     animationFrameId = requestAnimationFrame(gameLoop);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [velocityX, velocityY, position, verticalPosition]);
+  }, [velocityX, velocityY, position, verticalPosition, platforms]);
 
   const checkPlatformCollision = (platform, charX, charY) => {
     const charWidth = 50; // Character width
@@ -116,13 +115,19 @@ const MoveBox = () => {
     return withinX && withinY;
   };
 
-  // Toggle coin visibility when the character hits it
+  // Update platforms' coins visibility when the character hits them
   useEffect(() => {
-    platforms.forEach((platform, index) => {
-      if (platform.coin.visible && checkCoinCollision(platform.coin, position, verticalPosition)) {
-        platform.coin.visible = false; // Coin disappears
-      }
-    });
+    setPlatforms((prevPlatforms) => 
+      prevPlatforms.map((platform) => {
+        if (platform.coin.visible && checkCoinCollision(platform.coin, position, verticalPosition)) {
+          return {
+            ...platform,
+            coin: { ...platform.coin, visible: false } // Coin disappears
+          };
+        }
+        return platform;
+      })
+    );
   }, [position, verticalPosition]);
 
   const containerStyle = {
