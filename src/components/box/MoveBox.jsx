@@ -1,34 +1,98 @@
 import React, { useState, useEffect } from "react";
 
-const MoveBox = () => {
-  const [position, setPosition] = useState(50); // Character's horizontal position
-  const [verticalPosition, setVerticalPosition] = useState(50); // Character's vertical position
-  const [velocityX, setVelocityX] = useState(0); // Horizontal velocity
-  const [velocityY, setVelocityY] = useState(0); // Vertical velocity
+const MoveBox = ({ coinCount, setCoinCount }) => {
+  const [position, setPosition] = useState(50);
+  const [verticalPosition, setVerticalPosition] = useState(50);
+  const [velocityX, setVelocityX] = useState(0);
+  const [velocityY, setVelocityY] = useState(0);
   const [isJumping, setIsJumping] = useState(false);
   const [keyState, setKeyState] = useState({ ArrowLeft: false, ArrowRight: false, ArrowUp: false });
+  const [coins, setCoins] = useState([
+    { x: 380, y: 120, visible: true },
+    { x: 680, y: 70, visible: true },
+    { x: 980, y: 170, visible: true },
+    { x: 1280, y: 220, visible: true },
+    { x: 230, y: 270, visible: true },
+    { x: 555, y: 320, visible: true },
+    { x: 830, y: 370, visible: true },
+    { x: 1580, y: 370, visible: true },
+    { x: 1180, y: 420, visible: true },
+  ]);
 
-  const groundLevel = 50; // Base ground level (relative to container)
+  const groundLevel = 50;
   const gravity = 0.5;
   const jumpStrength = 12;
   const horizontalSpeed = 3;
 
-  // Define platforms and coins (each platform has a coin)
   const platforms = [
-    { x: 300, y: 100, width: 200, height: 20, color: "red", coin: { x: 380, y: 120, visible: true } },
-    { x: 600, y: 50, width: 200, height: 20, color: "blue", coin: { x: 680, y: 70, visible: true } },
-    { x: 900, y: 150, width: 200, height: 20, color: "green", coin: { x: 980, y: 170, visible: true } },
-    { x: 1200, y: 200, width: 200, height: 20, color: "purple", coin: { x: 1280, y: 220, visible: true } },
-    { x: 150, y: 250, width: 200, height: 20, color: "orange", coin: { x: 230, y: 270, visible: true } },
-    { x: 475, y: 300, width: 200, height: 20, color: "yellow", coin: { x: 555, y: 320, visible: true } },
-    { x: 750, y: 350, width: 200, height: 20, color: "cyan", coin: { x: 830, y: 370, visible: true } },
-    { x: 1500, y: 350, width: 200, height: 20, color: "magenta", coin: { x: 1580, y: 370, visible: true } },
-    { x: 1100, y: 400, width: 200, height: 20, color: "brown", coin: { x: 1180, y: 420, visible: true } },
+    { x: 300, y: 100, width: 200, height: 20, color: "red" },
+    { x: 600, y: 50, width: 200, height: 20, color: "blue" },
+    { x: 900, y: 150, width: 200, height: 20, color: "green" },
+    { x: 1200, y: 200, width: 200, height: 20, color: "purple" },
+    { x: 150, y: 250, width: 200, height: 20, color: "orange" },
+    { x: 475, y: 300, width: 200, height: 20, color: "yellow" },
+    { x: 750, y: 350, width: 200, height: 20, color: "cyan" },
+    { x: 1500, y: 350, width: 200, height: 20, color: "magenta" },
+    { x: 1100, y: 400, width: 200, height: 20, color: "brown" },
   ];
+
+  // Collision detection for platforms
+  const checkPlatformCollision = (platform, charX, charY) => {
+    const charWidth = 50;
+    const charHeight = 50;
+    const platformLeft = platform.x;
+    const platformRight = platform.x + platform.width;
+    const platformTop = platform.y;
+    const platformBottom = platform.y + platform.height;
+
+    const charLeft = charX;
+    const charRight = charX + charWidth;
+    const charTop = charY;
+    const charBottom = charY + charHeight;
+
+    return (
+      charRight > platformLeft &&
+      charLeft < platformRight &&
+      charBottom > platformTop &&
+      charTop < platformBottom
+    );
+  };
+
+  const checkCoinCollision = (coin, charX, charY) => {
+    const charWidth = 50;
+    const charHeight = 50;
+    const coinWidth = 20;
+    const coinHeight = 20;
+
+    const withinX = charX + charWidth > coin.x && charX < coin.x + coinWidth;
+    const withinY = charY + charHeight > coin.y && charY < coin.y + coinHeight;
+
+    return withinX && withinY;
+  };
+
+  useEffect(() => {
+    // Instead of calling setCoinCount directly in the render phase, delay it inside the useEffect
+    setCoins((prevCoins) =>
+      prevCoins.map((coin) => {
+        if (coin.visible && checkCoinCollision(coin, position, verticalPosition)) {
+          // Delay state change to avoid calling setCoinCount during render
+          return { ...coin, visible: false }; // Coin disappears
+        }
+        return coin;
+      })
+    );
+  }, [position, verticalPosition]); // only run when position or vertical position changes
+
+  // Check for all coins being collected
+  useEffect(() => {
+    const allCoinsCollected = coins.every((coin) => !coin.visible);
+    if (allCoinsCollected) {
+      setCoinCount(coins.length); // Update count once all coins are collected
+    }
+  }, [coins, setCoinCount]);
 
   useEffect(() => {
     let animationFrameId;
-
     const gameLoop = () => {
       setPosition((prevPos) => prevPos + velocityX);
       setVerticalPosition((prevVert) => {
@@ -42,7 +106,7 @@ const MoveBox = () => {
           setVelocityY(0);
           return platforms.find((platform) =>
             checkPlatformCollision(platform, position, nextVert)
-          ).y + 20; // Align to the top of the platform
+          ).y + 20;
         }
 
         if (nextVert <= groundLevel) {
@@ -55,7 +119,6 @@ const MoveBox = () => {
       });
 
       setVelocityY((prevVelY) => prevVelY - gravity);
-
       animationFrameId = requestAnimationFrame(gameLoop);
     };
 
@@ -63,16 +126,6 @@ const MoveBox = () => {
 
     return () => cancelAnimationFrame(animationFrameId);
   }, [velocityX, velocityY, position, verticalPosition]);
-
-  const checkPlatformCollision = (platform, charX, charY) => {
-    const charWidth = 50; // Character width
-    const charHeight = 50; // Character height
-
-    const withinX = charX + charWidth > platform.x && charX < platform.x + platform.width;
-    const onTop = charY - charHeight <= platform.y && charY >= platform.y - 5;
-
-    return withinX && onTop;
-  };
 
   const handleKeyDown = (e) => {
     setKeyState((prev) => ({ ...prev, [e.key]: true }));
@@ -102,28 +155,6 @@ const MoveBox = () => {
       setVelocityY(jumpStrength);
     }
   }, [keyState, isJumping]);
-
-  // Check for coin collision
-  const checkCoinCollision = (coin, charX, charY) => {
-    const charWidth = 50;
-    const charHeight = 50;
-    const coinWidth = 20; // Coin width
-    const coinHeight = 20; // Coin height
-
-    const withinX = charX + charWidth > coin.x && charX < coin.x + coinWidth;
-    const withinY = charY + charHeight > coin.y && charY < coin.y + coinHeight;
-
-    return withinX && withinY;
-  };
-
-  // Toggle coin visibility when the character hits it
-  useEffect(() => {
-    platforms.forEach((platform, index) => {
-      if (platform.coin.visible && checkCoinCollision(platform.coin, position, verticalPosition)) {
-        platform.coin.visible = false; // Coin disappears
-      }
-    });
-  }, [position, verticalPosition]);
 
   const containerStyle = {
     position: "relative",
@@ -171,17 +202,21 @@ const MoveBox = () => {
               backgroundColor: platform.color,
             }}
           ></div>
-          {platform.coin.visible && (
-            <div
-              style={{
-                ...coinStyle,
-                left: `${platform.coin.x}px`,
-                bottom: `${platform.coin.y + 10}px`,
-              }}
-            ></div>
-          )}
         </div>
       ))}
+      {coins.map(
+        (coin, index) =>
+          coin.visible && (
+            <div
+              key={index}
+              style={{
+                ...coinStyle,
+                left: `${coin.x}px`,
+                bottom: `${coin.y + 10}px`,
+              }}
+            ></div>
+          )
+      )}
     </div>
   );
 };
