@@ -18,7 +18,7 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     { x: 1580, y: 370, visible: true },
     { x: 1180, y: 420, visible: true },
   ]);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
   const groundLevel = 50;
   const gravity = 0.5;
@@ -40,16 +40,17 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
   const checkPlatformCollision = (platform, charX, charY) => {
     const charWidth = 50;
     const charHeight = 50;
+
     const platformLeft = platform.x;
     const platformRight = platform.x + platform.width;
     const platformTop = platform.y;
     const platformBottom = platform.y + platform.height;
-  
+
     const charLeft = charX;
     const charRight = charX + charWidth;
     const charTop = charY;
     const charBottom = charY + charHeight;
-  
+
     return (
       charRight > platformLeft &&
       charLeft < platformRight &&
@@ -57,7 +58,6 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
       charTop < platformBottom
     );
   };
-  
 
   const checkCoinCollision = (coin, charX, charY) => {
     const charWidth = 50;
@@ -65,18 +65,20 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     const coinWidth = 20;
     const coinHeight = 20;
 
-    const withinX = charX + charWidth > coin.x && charX < coin.x + coinWidth;
-    const withinY = charY + charHeight > coin.y && charY < coin.y + coinHeight;
-
-    return withinX && withinY;
+    return (
+      charX + charWidth > coin.x &&
+      charX < coin.x + coinWidth &&
+      charY > coin.y &&
+      charY - charHeight < coin.y + coinHeight
+    );
   };
 
   useEffect(() => {
     setCoins((prevCoins) =>
       prevCoins.map((coin) => {
         if (coin.visible && checkCoinCollision(coin, position, verticalPosition)) {
-          setCoinCount((prevCount) => prevCount + 1);
-          return { ...coin, visible: false };
+          setCoinCount((prevCount) => prevCount + 1); 
+          return { ...coin, visible: false }; 
         }
         return coin;
       })
@@ -84,48 +86,74 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
   }, [position, verticalPosition, setCoinCount]);
 
   useEffect(() => {
-    const allCoinsCollected = coins.every((coin) => !coin.visible);
-    if (allCoinsCollected) {
-      setShowModal(true);
+    // Check if all coins are collected
+    if (coins.every((coin) => !coin.visible)) {
+      setShowModal(true); // Show modal when all coins are collected
     }
   }, [coins]);
 
+  const handlePlayAgain = () => {
+    setShowModal(false); // Close modal
+    setCoinCount(0); // Reset coin count
+    setCoins([
+      { x: 380, y: 120, visible: true },
+      { x: 680, y: 70, visible: true },
+      { x: 980, y: 170, visible: true },
+      { x: 1280, y: 220, visible: true },
+      { x: 230, y: 270, visible: true },
+      { x: 555, y: 320, visible: true },
+      { x: 830, y: 370, visible: true },
+      { x: 1580, y: 370, visible: true },
+      { x: 1180, y: 420, visible: true },
+    ]); // Reset coins visibility
+    setPosition(50); // Reset player position
+    setVerticalPosition(50); // Reset player vertical position
+  };
+
+  const handleExit = () => {
+    alert("Thanks for playing!"); // You can handle the exit logic here
+    // Optionally navigate away or stop the game.
+  };
+
   useEffect(() => {
     let animationFrameId;
+
     const gameLoop = () => {
-      setPosition((prevPos) => prevPos + velocityX);
-      setVerticalPosition((prevVert) => {
-        const nextVert = prevVert + velocityY;
+      setPosition((prev) => prev + velocityX);
+
+      setVerticalPosition((prev) => {
+        const nextY = prev + velocityY;
+
         const onPlatform = platforms.some((platform) =>
-          checkPlatformCollision(platform, position, nextVert)
+          checkPlatformCollision(platform, position, nextY)
         );
-  
+
         if (onPlatform && velocityY <= 0) {
           setIsJumping(false);
           setVelocityY(0);
-          return platforms.find((platform) =>
-            checkPlatformCollision(platform, position, nextVert)
-          ).y + 20;
+          const platformY = platforms.find((platform) =>
+            checkPlatformCollision(platform, position, nextY)
+          ).y;
+          return platformY + 20;
         }
-  
-        if (nextVert <= groundLevel) {
+
+        if (nextY <= groundLevel) {
           setIsJumping(false);
           setVelocityY(0);
           return groundLevel;
         }
-  
-        return nextVert;
+
+        return nextY;
       });
-  
-      setVelocityY((prevVelY) => prevVelY - gravity);
+
+      setVelocityY((prev) => prev - gravity);
       animationFrameId = requestAnimationFrame(gameLoop);
     };
-  
+
     animationFrameId = requestAnimationFrame(gameLoop);
-  
+
     return () => cancelAnimationFrame(animationFrameId);
   }, [velocityX, velocityY, position, verticalPosition]);
-  
 
   const handleKeyDown = (e) => {
     setKeyState((prev) => ({ ...prev, [e.key]: true }));
@@ -156,122 +184,88 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     }
   }, [keyState, isJumping]);
 
-  const handlePlayAgain = () => {
-    setCoins((prevCoins) => prevCoins.map((coin) => ({ ...coin, visible: true })));
-    setPosition(50);
-    setVerticalPosition(50);
-    setShowModal(false);
+  const containerStyle = {
+    position: "relative",
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "lightblue",
+    overflow: "hidden",
+  };
+
+  const characterStyle = {
+    position: "absolute",
+    width: "50px",
+    height: "50px",
+    backgroundColor: "red",
+    border: "2px solid black",
+    left: `${position}px`,
+    bottom: `${verticalPosition}px`,
+  };
+
+  const platformStyle = {
+    position: "absolute",
+    backgroundColor: "brown",
+  };
+
+  const coinStyle = {
+    position: "absolute",
+    width: "20px",
+    height: "20px",
+    backgroundColor: "yellow",
+    borderRadius: "50%",
   };
 
   const modalStyle = {
-    position: "fixed",
+    position: "absolute",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
     backgroundColor: "white",
     padding: "20px",
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-    zIndex: 1000,
-  };
-
-  const overlayStyle = {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 999,
+    border: "2px solid black",
+    textAlign: "center",
   };
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100vw",
-        height: "100vh",
-        overflow: "hidden",
-        backgroundColor: "lightblue", // Example background color
-      }}
-    >
-      {/* Character */}
-      <div
-        style={{
-          position: "absolute",
-          width: "50px",
-          height: "50px",
-          backgroundColor: "blue",
-          top: `${verticalPosition}px`,
-          left: `${position}px`,
-        }}
-      ></div>
-  
-      {/* Platforms */}
+    <div style={containerStyle}>
+      <div style={characterStyle}></div>
       {platforms.map((platform, index) => (
         <div
           key={index}
           style={{
-            position: "absolute",
+            ...platformStyle,
             width: `${platform.width}px`,
             height: `${platform.height}px`,
-            backgroundColor: platform.color,
-            top: `${platform.y}px`,
             left: `${platform.x}px`,
+            bottom: `${platform.y}px`,
+            backgroundColor: platform.color,
           }}
         ></div>
       ))}
-  
-      {/* Coins */}
       {coins.map(
         (coin, index) =>
           coin.visible && (
             <div
               key={index}
               style={{
-                position: "absolute",
-                width: "20px",
-                height: "20px",
-                backgroundColor: "gold",
-                borderRadius: "50%",
-                top: `${coin.y}px`,
+                ...coinStyle,
                 left: `${coin.x}px`,
+                bottom: `${coin.y}px`,
               }}
             ></div>
           )
       )}
-  
+
       {/* Modal */}
       {showModal && (
-        <>
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              zIndex: 999,
-            }}
-          ></div>
-          <div
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              backgroundColor: "white",
-              padding: "20px",
-              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-              zIndex: 1000,
-            }}
-          >
-            <h2>Congratulations! You've collected all the coins!</h2>
-            <button onClick={handlePlayAgain}>Play Again</button>
-          </div>
-        </>
+        <div style={modalStyle}>
+          <h2>Congratulations! You've collected all the coins!</h2>
+          <button onClick={handlePlayAgain}>Play Again</button>
+          <button onClick={handleExit}>Exit</button>
+        </div>
       )}
     </div>
   );
-};  
+};
+
 export default MoveBox;
