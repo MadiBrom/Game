@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-const MoveBox = ({ setCoinCount }) => {
+const MoveBox = ({ coinCount, setCoinCount }) => {
   const [position, setPosition] = useState(50);
   const [verticalPosition, setVerticalPosition] = useState(50);
   const [velocityX, setVelocityX] = useState(0);
   const [velocityY, setVelocityY] = useState(0);
   const [isJumping, setIsJumping] = useState(false);
   const [keyState, setKeyState] = useState({ ArrowLeft: false, ArrowRight: false, ArrowUp: false });
-
   const [coins, setCoins] = useState([
     { x: 380, y: 120, visible: true },
     { x: 680, y: 70, visible: true },
@@ -37,9 +36,63 @@ const MoveBox = ({ setCoinCount }) => {
     { x: 1100, y: 400, width: 200, height: 20, color: "brown" },
   ];
 
+  // Collision detection for platforms
+  const checkPlatformCollision = (platform, charX, charY) => {
+    const charWidth = 50;
+    const charHeight = 50;
+    const platformLeft = platform.x;
+    const platformRight = platform.x + platform.width;
+    const platformTop = platform.y;
+    const platformBottom = platform.y + platform.height;
+
+    const charLeft = charX;
+    const charRight = charX + charWidth;
+    const charTop = charY;
+    const charBottom = charY + charHeight;
+
+    return (
+      charRight > platformLeft &&
+      charLeft < platformRight &&
+      charBottom > platformTop &&
+      charTop < platformBottom
+    );
+  };
+
+  const checkCoinCollision = (coin, charX, charY) => {
+    const charWidth = 50;
+    const charHeight = 50;
+    const coinWidth = 20;
+    const coinHeight = 20;
+
+    const withinX = charX + charWidth > coin.x && charX < coin.x + coinWidth;
+    const withinY = charY + charHeight > coin.y && charY < coin.y + coinHeight;
+
+    return withinX && withinY;
+  };
+
+  useEffect(() => {
+    // Instead of calling setCoinCount directly in the render phase, delay it inside the useEffect
+    setCoins((prevCoins) =>
+      prevCoins.map((coin) => {
+        if (coin.visible && checkCoinCollision(coin, position, verticalPosition)) {
+          // Delay state change to avoid calling setCoinCount during render
+          return { ...coin, visible: false }; // Coin disappears
+        }
+        return coin;
+      })
+    );
+  }, [position, verticalPosition]); // only run when position or vertical position changes
+
+  // Check for all coins being collected
+  useEffect(() => {
+    const allCoinsCollected = coins.every((coin) => !coin.visible);
+    if (allCoinsCollected) {
+      setCoinCount(coins.length); // Update count once all coins are collected
+    }
+  }, [coins, setCoinCount]);
+
   useEffect(() => {
     let animationFrameId;
-
     const gameLoop = () => {
       setPosition((prevPos) => prevPos + velocityX);
       setVerticalPosition((prevVert) => {
@@ -53,7 +106,7 @@ const MoveBox = ({ setCoinCount }) => {
           setVelocityY(0);
           return platforms.find((platform) =>
             checkPlatformCollision(platform, position, nextVert)
-          ).y + 20; // Align to the top of the platform
+          ).y + 20;
         }
 
         if (nextVert <= groundLevel) {
@@ -66,7 +119,6 @@ const MoveBox = ({ setCoinCount }) => {
       });
 
       setVelocityY((prevVelY) => prevVelY - gravity);
-
       animationFrameId = requestAnimationFrame(gameLoop);
     };
 
@@ -74,16 +126,6 @@ const MoveBox = ({ setCoinCount }) => {
 
     return () => cancelAnimationFrame(animationFrameId);
   }, [velocityX, velocityY, position, verticalPosition]);
-
-  const checkPlatformCollision = (platform, charX, charY) => {
-    const charWidth = 50;
-    const charHeight = 50;
-
-    const withinX = charX + charWidth > platform.x && charX < platform.x + platform.width;
-    const onTop = charY - charHeight <= platform.y && charY >= platform.y - 5;
-
-    return withinX && onTop;
-  };
 
   const handleKeyDown = (e) => {
     setKeyState((prev) => ({ ...prev, [e.key]: true }));
@@ -113,31 +155,6 @@ const MoveBox = ({ setCoinCount }) => {
       setVelocityY(jumpStrength);
     }
   }, [keyState, isJumping]);
-
-  const checkCoinCollision = (coin, charX, charY) => {
-    const charWidth = 50;
-    const charHeight = 50;
-    const coinWidth = 20;
-    const coinHeight = 20;
-
-    const withinX = charX + charWidth > coin.x && charX < coin.x + coinWidth;
-    const withinY = charY + charHeight > coin.y && charY < coin.y + coinHeight;
-
-    return withinX && withinY;
-  };
-
-  // Automatically update coin count when the character hits a coin
-  useEffect(() => {
-    setCoins((prevCoins) =>
-      prevCoins.map((coin) => {
-        if (coin.visible && checkCoinCollision(coin, position, verticalPosition)) {
-          setCoinCount((prevCount) => prevCount + 1); // Increment coin count
-          return { ...coin, visible: false }; // Coin disappears
-        }
-        return coin;
-      })
-    );
-  }, [position, verticalPosition, setCoinCount]);
 
   const containerStyle = {
     position: "relative",

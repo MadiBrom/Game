@@ -4,13 +4,12 @@ const Navbar = ({ coinCount }) => {
   return (
     <>
       <ul>
+
         <li><Link to="/">Home</Link></li>
         <li><Link to="/1">1</Link></li>
         <li><Link to="/2">2</Link></li>
         <li><Link to="/3">3</Link></li>
-      </ul>
 
-      {/* Ensure this div always renders */}
       <div
         style={{
           position: "absolute",
@@ -20,8 +19,10 @@ const Navbar = ({ coinCount }) => {
           fontSize: "24px",
         }}
       >
-        Coins: {coinCount} {/* Display the coin count */}
+        Coins: {coinCount}
       </div>
+      </ul>
+
     </>
   );
 };
