@@ -22,7 +22,7 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
 
   const groundLevel = 50;
   const gravity = 0.5;
-  const jumpStrength = 12;
+  const jumpStrength = 10;
   const horizontalSpeed = 3;
 
   const platforms = [
@@ -64,12 +64,12 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     const charHeight = 50;
     const coinWidth = 20;
     const coinHeight = 20;
-
+  
     return (
       charX + charWidth > coin.x &&
       charX < coin.x + coinWidth &&
-      charY > coin.y &&
-      charY - charHeight < coin.y + coinHeight
+      charY + charHeight > coin.y &&  // Vertical overlap
+      charY < coin.y + coinHeight    // Coin is below the character
     );
   };
 
@@ -78,7 +78,7 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
       prevCoins.map((coin) => {
         if (coin.visible && checkCoinCollision(coin, position, verticalPosition)) {
           setCoinCount((prevCount) => prevCount + 1); 
-          return { ...coin, visible: false }; 
+          return { ...coin, visible: false }; // Mark coin as collected
         }
         return coin;
       })
@@ -94,7 +94,6 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
 
   const handlePlayAgain = () => {
     setShowModal(false); // Close modal
-    setCoinCount(0); // Reset coin count
     setCoins([
       { x: 380, y: 120, visible: true },
       { x: 680, y: 70, visible: true },
@@ -112,7 +111,6 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
 
   const handleExit = () => {
     alert("Thanks for playing!"); // You can handle the exit logic here
-    // Optionally navigate away or stop the game.
   };
 
   useEffect(() => {
@@ -250,7 +248,8 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
               style={{
                 ...coinStyle,
                 left: `${coin.x}px`,
-                bottom: `${coin.y}px`,
+                bottom: `${coin.y + 10}px`,
+                border: "1px solid black"
               }}
             ></div>
           )
