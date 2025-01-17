@@ -14,7 +14,7 @@ const Navbar = ({ coinCount }) => {
         style={{
           position: "absolute",
           top: "20px",
-          left: "20px",
+          right: "20px",
           color: "white",
           fontSize: "24px",
         }}
