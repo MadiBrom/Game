@@ -60,6 +60,56 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     );
   };
 
+  const randomizePlatforms = () => {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const minVerticalSpacing = 80; // Minimum vertical distance between platforms
+    const maxVerticalSpacing = 150; // Maximum vertical distance between platforms
+    const maxHorizontalSpacing = 300; // Maximum horizontal distance for a jump
+    const platformWidth = 200;
+    const platformHeight = 20;
+  
+    const generateRandomPlatform = (existingPlatforms) => {
+      let x, y;
+      let isOverlapping;
+  
+      do {
+        // Generate a random position
+        x = Math.floor(Math.random() * (screenWidth - platformWidth));
+        y = Math.floor(Math.random() * (screenHeight - 100));
+  
+        // Check for overlaps with existing platforms
+        isOverlapping = existingPlatforms.some((platform) => {
+          return (
+            x < platform.x + platform.width && // Overlaps horizontally
+            x + platformWidth > platform.x && // Overlaps horizontally
+            y < platform.y + platformHeight && // Overlaps vertically
+            y + platformHeight > platform.y // Overlaps vertically
+          );
+        });
+      } while (isOverlapping);
+  
+      return { x, y };
+    };
+  
+    let newPlatforms = [];
+    let prevPlatform = { x: 50, y: groundLevel }; // Start with a base platform
+  
+    platforms.forEach((platform) => {
+      const newPlatform = generateRandomPlatform(newPlatforms);
+      newPlatforms.push({
+        ...platform,
+        x: newPlatform.x,
+        y: newPlatform.y,
+      });
+      prevPlatform = newPlatform;
+    });
+  
+    return newPlatforms;
+  };
+  
+  
+
   const checkCoinCollision = (coin, charX, charY) => {
     const charWidth = 50;
     const charHeight = 50;
@@ -95,24 +145,25 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
 
   const handlePlayAgain = () => {
     setShowModal(false); // Close modal
+    
+    // Randomize platforms and update state
+    const newPlatforms = randomizePlatforms();
+    setPlatforms(newPlatforms);
   
-    // Function to randomize platform positions
-    const randomizePlatforms = () => {
-      const newPlatforms = platforms.map(platform => ({
-        ...platform,
-        x: Math.floor(Math.random() * (window.innerWidth - platform.width)), // Random x position
-        y: Math.floor(Math.random() * (window.innerHeight - platform.height)), // Random y position
-      }));
+    // Link coins to the randomized platforms
+    const newCoins = newPlatforms.map((platform) => ({
+      x: platform.x + platform.width / 2 - 10, // Center the coin horizontally on the platform
+      y: platform.y + platform.height + 10,   // Place the coin slightly above the platform
+      visible: true, // Reset all coins to visible
+    }));
+    setCoins(newCoins);
   
-      return newPlatforms;
-    };
-  
-    setPlatforms(randomizePlatforms()); // Apply randomized positions
-  
-    // Reset player position
-    setPosition(50); 
-    setVerticalPosition(50); 
+    // Reset character position
+    setPosition(50);
+    setVerticalPosition(50);
   };
+  
+  
 
   const handleExit = () => {
     alert("Thanks for playing!"); // You can handle the exit logic here
