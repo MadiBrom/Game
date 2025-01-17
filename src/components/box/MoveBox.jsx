@@ -20,12 +20,8 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
   ]);
   const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
-  const groundLevel = 50;
-  const gravity = 0.5;
-  const jumpStrength = 10;
-  const horizontalSpeed = 3;
-
-  const platforms = [
+  // State for platforms
+  const [platforms, setPlatforms] = useState([
     { x: 300, y: 100, width: 200, height: 20, color: "red" },
     { x: 600, y: 50, width: 200, height: 20, color: "blue" },
     { x: 900, y: 150, width: 200, height: 20, color: "green" },
@@ -35,7 +31,12 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     { x: 750, y: 350, width: 200, height: 20, color: "cyan" },
     { x: 1500, y: 350, width: 200, height: 20, color: "magenta" },
     { x: 1100, y: 400, width: 200, height: 20, color: "brown" },
-  ];
+  ]);
+
+  const groundLevel = 50;
+  const gravity = 0.5;
+  const jumpStrength = 10;
+  const horizontalSpeed = 3;
 
   const checkPlatformCollision = (platform, charX, charY) => {
     const charWidth = 50;
@@ -94,19 +95,23 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
 
   const handlePlayAgain = () => {
     setShowModal(false); // Close modal
-    setCoins([
-      { x: 380, y: 120, visible: true },
-      { x: 680, y: 70, visible: true },
-      { x: 980, y: 170, visible: true },
-      { x: 1280, y: 220, visible: true },
-      { x: 230, y: 270, visible: true },
-      { x: 555, y: 320, visible: true },
-      { x: 830, y: 370, visible: true },
-      { x: 1580, y: 370, visible: true },
-      { x: 1180, y: 420, visible: true },
-    ]); // Reset coins visibility
-    setPosition(50); // Reset player position
-    setVerticalPosition(50); // Reset player vertical position
+  
+    // Function to randomize platform positions
+    const randomizePlatforms = () => {
+      const newPlatforms = platforms.map(platform => ({
+        ...platform,
+        x: Math.floor(Math.random() * (window.innerWidth - platform.width)), // Random x position
+        y: Math.floor(Math.random() * (window.innerHeight - platform.height)), // Random y position
+      }));
+  
+      return newPlatforms;
+    };
+  
+    setPlatforms(randomizePlatforms()); // Apply randomized positions
+  
+    // Reset player position
+    setPosition(50); 
+    setVerticalPosition(50); 
   };
 
   const handleExit = () => {
