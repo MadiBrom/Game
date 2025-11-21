@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
-import run0 from "./pics/run0.png";
-import run1 from "./pics/run1.png";
-import run2 from "./pics/run2.png";
-import run3 from "./pics/run3.png";
-import run4 from "./pics/run4.png";
-import run5 from "./pics/run5.png";
-import robo from "./pics/robo.png";
+import run0 from "./pics/rori/run0.png";
+import run1 from "./pics/rori/run1.png";
+import run2 from "./pics/rori/run2.png";
+import run3 from "./pics/rori/run3.png";
+import run4 from "./pics/rori/run4.png";
+import run5 from "./pics/rori/run5.png";
+import robo from "./pics/robots/robo.png";
 
 const runningImages = [run0, run1, run2, run3, run4, run5];
 
 const Room = () => {
-  const navigate = useNavigate();
   const [position, setPosition] = useState(20);
   const [verticalPosition, setVerticalPosition] = useState(200);
   const [isJumping, setIsJumping] = useState(false);
@@ -30,18 +28,11 @@ const Room = () => {
     y: verticalPosition + 100,
   });
 
-  const [isInRange, setIsInRange] = useState(false);
-
   const gravity = 0.5;
   const jumpStrength = 10;
   const horizontalSpeed = 3;
   const groundLevel = 200;
   const animationSpeed = 150;
-
-  const buttonPosition = {
-    x: 1000,
-    y: groundLevel,
-  };
 
   const handleKeyDown = (e) => {
     setKeyState((prevState) => ({ ...prevState, [e.key]: true }));
@@ -128,12 +119,6 @@ const Room = () => {
         setVelocityY((prevVelocityY) => prevVelocityY + gravity);
       }
 
-      const distance = Math.abs(position - buttonPosition.x);
-      if (distance < 50 && verticalPosition === buttonPosition.y) {
-        setIsInRange(true); 
-      } else {
-        setIsInRange(false);
-      }
     }, 20);
 
     return () => clearInterval(jumpInterval);
@@ -160,16 +145,6 @@ const Room = () => {
     transform: isFlipped ? "scaleX(-1)" : "scaleX(1)",
   };
 
-  const buttonStyle = {
-    position: "absolute",
-    bottom: `${buttonPosition.y}px`,
-    right: `${buttonPosition.x}px`,
-    padding: "10px 20px",
-    backgroundColor: isInRange ? "green" : "gray",
-    color: "white",
-    cursor: isInRange ? "pointer" : "default",
-    pointerEvents: isInRange ? "auto" : "none",
-  };
   const robotStyle = {
     width: "300px",
     height: "300px",
@@ -192,17 +167,6 @@ const Room = () => {
       />
 
       <div style={robotStyle}></div>
-
-      <button
-        style={buttonStyle}
-        onClick={() => {
-          if (isInRange) {
-            navigate("/3");
-          }
-        }}
-      >
-        {isInRange ? "Press me" : "Out of range"}
-      </button>
     </div>
   );
 };
