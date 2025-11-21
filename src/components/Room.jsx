@@ -6,7 +6,7 @@ import run2 from "./pics/rori/run2.png";
 import run3 from "./pics/rori/run3.png";
 import run4 from "./pics/rori/run4.png";
 import run5 from "./pics/rori/run5.png";
-import robo from "./pics/robots/robo.png";
+import "./room.css";
 
 const runningImages = [run0, run1, run2, run3, run4, run5];
 
@@ -124,49 +124,37 @@ const Room = () => {
     return () => clearInterval(jumpInterval);
   }, [isJumping, velocityX, velocityY, gravity, position, verticalPosition]);
 
-  const containerStyle = {
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "grey",
-    backgroundSize: "cover", 
-    backgroundPosition: "center", 
-    backgroundRepeat: "no-repeat", 
-    position: "relative",
-  };
+  const characterClasses = [
+    "character",
+    isJumping ? "character--jumping" : "",
+    isFlipped ? "character--flipped" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  const characterStyle = {
-    width: "500px", 
-    height: "500px",
-    position: "fixed",
-    bottom: `${verticalPosition}px`,
-    right: `${position}px`,
-    transition: !isJumping ? "right 0.1s" : "none",
-    backgroundColor: "transparent",
-    transform: isFlipped ? "scaleX(-1)" : "scaleX(1)",
-  };
-
-  const robotStyle = {
-    width: "300px",
-    height: "300px",
-    position: "fixed",
-    bottom: `${floatingPosition.y}px`,
-    right: `${floatingPosition.x}px`,
-    backgroundImage: `url(${robo})`,
-    backgroundSize: "contain",
-    backgroundRepeat: "no-repeat",
-    transformOrigin: "center",
-    transform: isFlipped ? "scaleX(-1)" : "scaleX(1)",
-  };
+  const robotClasses = ["robot", isFlipped ? "robot--flipped" : ""]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div style={containerStyle}>
+    <div className="room-container">
       <img
         src={runningImages[currentImageIndex]}
         alt="Character"
-        style={characterStyle}
+        className={characterClasses}
+        style={{
+          bottom: `${verticalPosition}px`,
+          right: `${position}px`,
+        }}
       />
 
-      <div style={robotStyle}></div>
+      <div
+        className={robotClasses}
+        style={{
+          bottom: `${floatingPosition.y}px`,
+          right: `${floatingPosition.x}px`,
+        }}
+      ></div>
     </div>
   );
 };
