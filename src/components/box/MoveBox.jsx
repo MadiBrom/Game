@@ -18,9 +18,8 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     { x: 1580, y: 370, visible: true },
     { x: 1180, y: 420, visible: true },
   ]);
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [showModal, setShowModal] = useState(false);
 
-  // State for platforms
   const [platforms, setPlatforms] = useState([
     { x: 300, y: 100, width: 200, height: 20, color: "red" },
     { x: 600, y: 50, width: 200, height: 20, color: "blue" },
@@ -63,9 +62,9 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
   const randomizePlatforms = () => {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const minVerticalSpacing = 80; // Minimum vertical distance between platforms
-    const maxVerticalSpacing = 150; // Maximum vertical distance between platforms
-    const maxHorizontalSpacing = 300; // Maximum horizontal distance for a jump
+    const minVerticalSpacing = 80;
+    const maxVerticalSpacing = 150;
+    const maxHorizontalSpacing = 300;
     const platformWidth = 200;
     const platformHeight = 20;
   
@@ -74,17 +73,15 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
       let isOverlapping;
   
       do {
-        // Generate a random position
         x = Math.floor(Math.random() * (screenWidth - platformWidth));
         y = Math.floor(Math.random() * (screenHeight - 100));
   
-        // Check for overlaps with existing platforms
         isOverlapping = existingPlatforms.some((platform) => {
           return (
-            x < platform.x + platform.width && // Overlaps horizontally
-            x + platformWidth > platform.x && // Overlaps horizontally
-            y < platform.y + platformHeight && // Overlaps vertically
-            y + platformHeight > platform.y // Overlaps vertically
+            x < platform.x + platform.width &&
+            x + platformWidth > platform.x &&
+            y < platform.y + platformHeight &&
+            y + platformHeight > platform.y
           );
         });
       } while (isOverlapping);
@@ -93,7 +90,7 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     };
   
     let newPlatforms = [];
-    let prevPlatform = { x: 50, y: groundLevel }; // Start with a base platform
+    let prevPlatform = { x: 50, y: groundLevel };
   
     platforms.forEach((platform) => {
       const newPlatform = generateRandomPlatform(newPlatforms);
@@ -119,8 +116,8 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
     return (
       charX + charWidth > coin.x &&
       charX < coin.x + coinWidth &&
-      charY + charHeight > coin.y &&  // Vertical overlap
-      charY < coin.y + coinHeight    // Coin is below the character
+      charY + charHeight > coin.y &&  
+      charY < coin.y + coinHeight   
     );
   };
 
@@ -129,7 +126,7 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
       prevCoins.map((coin) => {
         if (coin.visible && checkCoinCollision(coin, position, verticalPosition)) {
           setCoinCount((prevCount) => prevCount + 1); 
-          return { ...coin, visible: false }; // Mark coin as collected
+          return { ...coin, visible: false };
         }
         return coin;
       })
@@ -137,28 +134,24 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
   }, [position, verticalPosition, setCoinCount]);
 
   useEffect(() => {
-    // Check if all coins are collected
     if (coins.every((coin) => !coin.visible)) {
-      setShowModal(true); // Show modal when all coins are collected
+      setShowModal(true);
     }
   }, [coins]);
 
   const handlePlayAgain = () => {
-    setShowModal(false); // Close modal
-    
-    // Randomize platforms and update state
+    setShowModal(false); 
+
     const newPlatforms = randomizePlatforms();
     setPlatforms(newPlatforms);
   
-    // Link coins to the randomized platforms
     const newCoins = newPlatforms.map((platform) => ({
-      x: platform.x + platform.width / 2 - 10, // Center the coin horizontally on the platform
-      y: platform.y + platform.height + 10,   // Place the coin slightly above the platform
-      visible: true, // Reset all coins to visible
+      x: platform.x + platform.width / 2 - 10, 
+      y: platform.y + platform.height + 10,   
+      visible: true,
     }));
     setCoins(newCoins);
   
-    // Reset character position
     setPosition(50);
     setVerticalPosition(50);
   };
@@ -166,7 +159,7 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
   
 
   const handleExit = () => {
-    alert("Thanks for playing!"); // You can handle the exit logic here
+    alert("Thanks for playing!"); 
   };
 
   useEffect(() => {
@@ -311,7 +304,6 @@ const MoveBox = ({ coinCount, setCoinCount }) => {
           )
       )}
 
-      {/* Modal */}
       {showModal && (
         <div style={modalStyle}>
           <h2>Congratulations! You've collected all the coins!</h2>

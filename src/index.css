@@ -1,17 +1,16 @@
-/* Navbar CSS */
 ul {
   display: flex;
-  justify-content: flex-start; /* Align links to the left */
-  align-items: center; /* Align items vertically */
-  list-style-type: none; /* Remove bullets */
-  margin: 0; /* Remove default margin */
-  padding: 0; /* Remove default padding */
-  background-color: #333; /* Background color for the navbar */
-  width: 100%; /* Full width across the page */
-  height: 50px; /* Fixed height for the navbar */
-  position: fixed; /* Stick to the top */
-  top: 0; /* Position it at the top of the page */
-  z-index: 1000; /* Ensure it stays above other content */
+  justify-content: flex-start;
+  align-items: center;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  background-color: #333;
+  width: 100%;
+  height: 50px;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
 }
 
 li {
@@ -21,11 +20,11 @@ li {
 a {
   display: block;
   padding: 14px 20px;
-  text-decoration: none; /* Remove underline */
-  color: white; /* Link color */
-  font-size: 16px; /* Font size */
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
 }
 
 a:hover {
-  background-color: #575757; /* Highlight on hover */
+  background-color: #575757;
 }

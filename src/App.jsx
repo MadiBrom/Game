@@ -7,13 +7,13 @@ import Room2 from "./components/box/Room2";
 import Navbar from './components/Navbar';
 
 const App = () => {
-  const [coinCount, setCoinCount] = useState(0); // Coin count state
+  const [coinCount, setCoinCount] = useState(0);
 
   return (
     <div>
-      <Navbar coinCount={coinCount} /> {/* Pass coinCount to Navbar */}
+      <Navbar coinCount={coinCount} />
       <Routes>
-        <Route path="/" element={<MoveBox setCoinCount={setCoinCount} />} /> {/* Pass setCoinCount to MoveBox */}
+        <Route path="/" element={<MoveBox setCoinCount={setCoinCount} />} /> 
         <Route path="/1" element={<Room />} />
         <Route path="/2" element={<Room1 />} />
         <Route path="/3" element={<Room2 />} />

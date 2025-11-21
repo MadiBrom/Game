@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 const Navbar = ({ coinCount }) => {
-  console.log('Navbar coinCount:', coinCount); // Debugging the prop
+  console.log('Navbar coinCount:', coinCount);
   return (
     <>
       <ul>
